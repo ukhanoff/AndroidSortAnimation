@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">BubbleSort</string>
     <string name="sort">Sort</string>
+    <string name="empty_field_warning">Field is empty. Please add some integers here</string>
 </resources>
