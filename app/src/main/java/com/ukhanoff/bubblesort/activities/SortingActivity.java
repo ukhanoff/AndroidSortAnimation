@@ -1,8 +1,9 @@
-package com.ukhanoff.bubblesort;
+package com.ukhanoff.bubblesort.activities;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 
+import com.ukhanoff.bubblesort.R;
 import com.ukhanoff.bubblesort.fragments.SortingFragment;
 
 public class SortingActivity extends AppCompatActivity {

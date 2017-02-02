@@ -20,6 +20,7 @@ public class BubbleImageView extends ImageView {
     public static final int START_X_POS = 25;
     public static final int TEXT_BASELINE_Y = 55;
     private Integer valueToDraw;
+    private boolean isSelected;
 
     public BubbleImageView(Context context) {
         this(context, null);
@@ -43,10 +44,14 @@ public class BubbleImageView extends ImageView {
             Rect bounds = new Rect();
             paint.setAntiAlias(true);
             paint.setTextSize(40f);
-            paint.getTextBounds(valueToDraw.toString(), 0, valueToDraw.toString().length(), bounds);
-            paint.setColor(getResources().getColor(R.color.colorAccent));
+            paint.getTextBounds(text, 0, text.length(), bounds);
+            if (!isSelected) {
+                paint.setColor(getResources().getColor(R.color.colorIndigo));
+            } else {
+                paint.setColor(getResources().getColor(R.color.colorAccent));
+            }
             canvas.drawOval(0, 0, bounds.width() + PADDING, bounds.height() + PADDING, paint);
-            paint.setColor(Color.BLACK);
+            paint.setColor(Color.WHITE);
             canvas.drawText(text.toString(), START_X_POS, TEXT_BASELINE_Y, paint);
         }
     }
@@ -59,5 +64,13 @@ public class BubbleImageView extends ImageView {
     public void setNumber(Integer numberValueToDraw) {
         valueToDraw = numberValueToDraw;
         invalidate();
+    }
+
+    public void setSelected(boolean isSelected) {
+        this.isSelected = isSelected;
+    }
+
+    public boolean isImageViewSelected() {
+        return isSelected;
     }
 }

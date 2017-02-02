@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +21,8 @@ import com.ukhanoff.bubblesort.utils.Utils;
 import com.ukhanoff.bubblesort.views.BubbleImageView;
 
 import java.util.ArrayList;
+
+import static android.content.ContentValues.TAG;
 
 /**
  * Created by ukhanoff on 2/2/17.
@@ -43,6 +46,13 @@ public class SortingFragment extends Fragment {
             }
         }
     };
+
+    static void swap(ArrayList<Integer> list, int inner) {
+        //TODO Add animator for this step
+        int temp = list.get(inner);
+        list.set(inner, list.get(inner + 1));
+        list.set(inner + 1, temp);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -91,7 +101,21 @@ public class SortingFragment extends Fragment {
         for (int i = 0; i < numberOfElements; i++) {
             parsedUserArray.add(Integer.parseInt(stringArray[i]));
         }
-        drawBubbles(parsedUserArray);
+        Log.d(TAG, "parseData: " + sort(parsedUserArray));
+        drawBubbles(sort(parsedUserArray));
+
+    }
+
+    public ArrayList<Integer> sort(ArrayList<Integer> unsortedValues) {
+        ArrayList<Integer> values = new ArrayList<>(unsortedValues);
+        for (int i = 0; i < values.size() - 1; i++) {
+            for (int j = 0; j < values.size() - i - 1; j++) {
+                if (values.get(j) > values.get(j + 1)) {
+                    swap(values, j);
+                }
+            }
+        }
+        return values;
     }
 
 }
