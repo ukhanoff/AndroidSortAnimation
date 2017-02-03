@@ -18,7 +18,7 @@ import static com.ukhanoff.bubblesort.fragments.SortingFragment.PADDING;
 
 public class BubbleImageView extends ImageView {
     public static final int START_X_POS = 25;
-    public static final int TEXT_BASELINE_Y = 55;
+    public static final int TEXT_BASELINE_Y = 105;
     private Integer valueToDraw;
     private boolean isSelected;
 
@@ -37,7 +37,6 @@ public class BubbleImageView extends ImageView {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        canvas.drawColor(Color.WHITE);
         if (valueToDraw != null) {
             String text = valueToDraw.toString();
             Paint paint = new Paint(Paint.LINEAR_TEXT_FLAG);
@@ -50,7 +49,7 @@ public class BubbleImageView extends ImageView {
             } else {
                 paint.setColor(getResources().getColor(R.color.colorAccent));
             }
-            canvas.drawOval(0, 0, bounds.width() + PADDING, bounds.height() + PADDING, paint);
+            canvas.drawOval(0, 60, bounds.width() + PADDING, 120, paint);
             paint.setColor(Color.WHITE);
             canvas.drawText(text.toString(), START_X_POS, TEXT_BASELINE_Y, paint);
         }
@@ -68,6 +67,7 @@ public class BubbleImageView extends ImageView {
 
     public void setBubbleSelected(boolean isSelected) {
         this.isSelected = isSelected;
+        invalidate();
     }
 
     public boolean isImageViewSelected() {
