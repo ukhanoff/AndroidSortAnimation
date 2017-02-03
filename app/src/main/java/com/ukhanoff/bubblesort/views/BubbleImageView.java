@@ -45,7 +45,7 @@ public class BubbleImageView extends ImageView {
             paint.setAntiAlias(true);
             paint.setTextSize(40f);
             paint.getTextBounds(text, 0, text.length(), bounds);
-            if (!isSelected) {
+            if (isSelected) {
                 paint.setColor(getResources().getColor(R.color.colorIndigo));
             } else {
                 paint.setColor(getResources().getColor(R.color.colorAccent));
@@ -66,7 +66,7 @@ public class BubbleImageView extends ImageView {
         invalidate();
     }
 
-    public void setSelected(boolean isSelected) {
+    public void setBubbleSelected(boolean isSelected) {
         this.isSelected = isSelected;
     }
 

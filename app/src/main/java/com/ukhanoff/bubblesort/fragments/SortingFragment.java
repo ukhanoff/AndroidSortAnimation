@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,8 +20,6 @@ import com.ukhanoff.bubblesort.utils.Utils;
 import com.ukhanoff.bubblesort.views.BubbleImageView;
 
 import java.util.ArrayList;
-
-import static android.content.ContentValues.TAG;
 
 /**
  * Created by ukhanoff on 2/2/17.
@@ -40,18 +37,27 @@ public class SortingFragment extends Fragment {
         public void onClick(View v) {
             String inputUserArray = editText.getText().toString();
             if (!TextUtils.isEmpty(inputUserArray)) {
-                parseData(inputUserArray);
+                ArrayList<Integer> integerArrayList = new ArrayList<>(convertToIntArray(inputUserArray));
+                drawBubbles(integerArrayList);
+                sort(integerArrayList);
             } else {
                 Toast.makeText(getContext(), R.string.empty_field_warning, Toast.LENGTH_LONG).show();
             }
         }
     };
 
-    static void swap(ArrayList<Integer> list, int inner) {
-        //TODO Add animator for this step
+    private void swap(ArrayList<Integer> list, int inner) {
+        swapViews(inner);
         int temp = list.get(inner);
         list.set(inner, list.get(inner + 1));
         list.set(inner + 1, temp);
+    }
+
+    private void swapViews(int innerPosition) {
+        //TODO Add animator for this step
+        BubbleImageView tempView = (BubbleImageView) bubblesContainer.getChildAt(innerPosition);
+        bubblesContainer.removeViewAt(innerPosition);
+        bubblesContainer.addView(tempView, innerPosition + 1);
     }
 
     @Override
@@ -67,6 +73,7 @@ public class SortingFragment extends Fragment {
     private void drawBubbles(ArrayList<Integer> listToDraw) {
         if (bubblesContainer != null) {
             bubblesContainer.removeAllViews();
+            bubblesContainer.invalidate();
         }
 
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -94,15 +101,16 @@ public class SortingFragment extends Fragment {
         return Bitmap.createBitmap(bounds.width() + PADDING, bounds.height() + PADDING, Bitmap.Config.RGB_565);
     }
 
-    private void parseData(String inputUserArray) {
+    private ArrayList convertToIntArray(String inputUserArray) {
         ArrayList<Integer> parsedUserArray = new ArrayList<>();
         String[] stringArray = inputUserArray.split(",");
         int numberOfElements = stringArray.length;
         for (int i = 0; i < numberOfElements; i++) {
-            parsedUserArray.add(Integer.parseInt(stringArray[i]));
+            if (!TextUtils.isEmpty(stringArray[i])) {
+                parsedUserArray.add(Integer.parseInt(stringArray[i]));
+            }
         }
-        Log.d(TAG, "parseData: " + sort(parsedUserArray));
-        drawBubbles(sort(parsedUserArray));
+        return parsedUserArray;
 
     }
 
