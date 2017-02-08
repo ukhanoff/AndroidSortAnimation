@@ -31,10 +31,10 @@ import java.util.ArrayList;
 public class SortingFragment extends Fragment {
     public static final int PADDING = 50;
     public static final int BUBBLE_MARGIN = 4;
-    int i = 0;
     private EditText editText;
     private Button goButton;
-    private Button animButton;
+    private boolean isAnimationRunning;
+    private int scenarioItemIndex = 0;
     private LinearLayout bubblesContainer;
     private AnimationsCoordinator animationsCoordinator;
     private ArrayList<AnimationScenarioItem> scenario;
@@ -44,15 +44,25 @@ public class SortingFragment extends Fragment {
         public void onClick(View v) {
             String inputUserArray = editText.getText().toString();
             if (!TextUtils.isEmpty(inputUserArray)) {
+                resetPreviousData();
                 scenario = new ArrayList<>();
                 ArrayList<Integer> integerArrayList = new ArrayList<>(convertToIntArray(inputUserArray));
                 drawBubbles(integerArrayList);
-                sort(integerArrayList);
+                generateSortScenario(integerArrayList);
+                runAnimationIteration();
             } else {
                 Toast.makeText(getContext(), R.string.empty_field_warning, Toast.LENGTH_LONG).show();
             }
         }
     };
+
+    private void resetPreviousData() {
+        if (isAnimationRunning && animationsCoordinator != null) {
+            animationsCoordinator.cancelAllVisualisations();
+            isAnimationRunning = false;
+        }
+        scenarioItemIndex = 0;
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -60,13 +70,6 @@ public class SortingFragment extends Fragment {
         editText = (EditText) fragmentView.findViewById(R.id.array_input);
         goButton = (Button) fragmentView.findViewById(R.id.go_sort_btn);
         goButton.setOnClickListener(buttonClickListener);
-        animButton = (Button) fragmentView.findViewById(R.id.start_animation_btn);
-        animButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                runAnimationIteration();
-            }
-        });
         bubblesContainer = (LinearLayout) fragmentView.findViewById(R.id.bubbles_container);
         animationsCoordinator = new AnimationsCoordinator(bubblesContainer);
         animationsCoordinator.addListener(new AlgorithmAnimationListener() {
@@ -79,13 +82,14 @@ public class SortingFragment extends Fragment {
     }
 
     private void runAnimationIteration() {
-        if (scenario != null && !scenario.isEmpty() && scenario.size() == i) {
+        isAnimationRunning = true;
+        if (scenario != null && scenario.size() == scenarioItemIndex) {
             animationsCoordinator.showFinish();
             return;
         }
-        if (scenario != null && !scenario.isEmpty() && scenario.size() > i) {
-            AnimationScenarioItem animationStep = scenario.get(i);
-            i++;
+        if (scenario != null && !scenario.isEmpty() && scenario.size() > scenarioItemIndex) {
+            AnimationScenarioItem animationStep = scenario.get(scenarioItemIndex);
+            scenarioItemIndex++;
             if (animationStep.isShouldBeSwapped()) {
                 animationsCoordinator.showSwapStep(animationStep.getAnimationViewItemPosition(), animationStep.isFinalPlace());
             } else {
@@ -104,6 +108,7 @@ public class SortingFragment extends Fragment {
     private void drawBubbles(ArrayList<Integer> listToDraw) {
         if (bubblesContainer != null) {
             bubblesContainer.removeAllViews();
+            bubblesContainer.clearAnimation();
         }
 
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -151,7 +156,7 @@ public class SortingFragment extends Fragment {
 
     }
 
-    private ArrayList<Integer> sort(ArrayList<Integer> unsortedValues) {
+    private ArrayList<Integer> generateSortScenario(ArrayList<Integer> unsortedValues) {
         ArrayList<Integer> values = new ArrayList<>(unsortedValues);
         boolean isLastInLoop;
         for (int i = 0; i < values.size() - 1; i++) {

@@ -19,6 +19,7 @@ public class AnimationsCoordinator implements AlgorithmStepsInterface {
 
     private ViewGroup bubblesContainer;
     private ArrayList<AlgorithmAnimationListener> listeners;
+    private ValueAnimator blinkAnimation;
 
     public AnimationsCoordinator(ViewGroup bubblesContainer) {
         this.bubblesContainer = bubblesContainer;
@@ -31,7 +32,7 @@ public class AnimationsCoordinator implements AlgorithmStepsInterface {
             final BubbleImageView nextTempView = (BubbleImageView) bubblesContainer.getChildAt(position + 1);
 
             //BLINKING
-            ValueAnimator blinkAnimation = ValueAnimator.ofInt(0, 5);
+            blinkAnimation = ValueAnimator.ofInt(0, 5);
             blinkAnimation.setDuration(2000);
             blinkAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
@@ -59,8 +60,6 @@ public class AnimationsCoordinator implements AlgorithmStepsInterface {
                     bubblesContainer.addView(tempView, position + 1);
 
                     notifySwapStepAnimationEnd(position);
-//                  animator.start();
-//                  animatorBack.start();
                 }
             });
 
@@ -75,7 +74,7 @@ public class AnimationsCoordinator implements AlgorithmStepsInterface {
             final BubbleImageView nextTempView = (BubbleImageView) bubblesContainer.getChildAt(position + 1);
 
             //BLINKING
-            ValueAnimator blinkAnimation = ValueAnimator.ofInt(0, 7);
+            blinkAnimation = ValueAnimator.ofInt(0, 7);
             blinkAnimation.setDuration(3000);
             blinkAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
@@ -116,7 +115,11 @@ public class AnimationsCoordinator implements AlgorithmStepsInterface {
 
     @Override
     public void cancelAllVisualisations() {
-
+        if (blinkAnimation != null) {
+            blinkAnimation.removeAllListeners();
+            blinkAnimation.cancel();
+            bubblesContainer.clearAnimation();
+        }
     }
 
     private void notifySwapStepAnimationEnd(int position) {
@@ -130,7 +133,7 @@ public class AnimationsCoordinator implements AlgorithmStepsInterface {
 
     public void addListener(AlgorithmAnimationListener listener) {
         if (listeners == null) {
-            listeners = new ArrayList<AlgorithmAnimationListener>();
+            listeners = new ArrayList<>();
         }
         listeners.add(listener);
     }
