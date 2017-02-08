@@ -19,8 +19,12 @@ import static com.ukhanoff.bubblesort.fragments.SortingFragment.PADDING;
 public class BubbleImageView extends ImageView {
     public static final int START_X_POS = 25;
     public static final int TEXT_BASELINE_Y = 105;
+    public static final int BOTTOM_POS = 120;
+    public static final int TOP_POS = 60;
+    public static final float TEXT_SIZE = 40f;
     private Integer valueToDraw;
     private boolean isSelected;
+    private boolean isOnFinalPlace;
 
     public BubbleImageView(Context context) {
         this(context, null);
@@ -42,14 +46,18 @@ public class BubbleImageView extends ImageView {
             Paint paint = new Paint(Paint.LINEAR_TEXT_FLAG);
             Rect bounds = new Rect();
             paint.setAntiAlias(true);
-            paint.setTextSize(40f);
+            paint.setTextSize(TEXT_SIZE);
             paint.getTextBounds(text, 0, text.length(), bounds);
-            if (isSelected) {
-                paint.setColor(getResources().getColor(R.color.colorIndigo));
+            if (isOnFinalPlace) {
+                paint.setColor(getResources().getColor(R.color.colorPrimaryDark));
             } else {
-                paint.setColor(getResources().getColor(R.color.colorAccent));
+                if (isSelected) {
+                    paint.setColor(getResources().getColor(R.color.colorIndigo));
+                } else {
+                    paint.setColor(getResources().getColor(R.color.colorAccent));
+                }
             }
-            canvas.drawOval(0, 60, bounds.width() + PADDING, 120, paint);
+            canvas.drawOval(0, TOP_POS, bounds.width() + PADDING, BOTTOM_POS, paint);
             paint.setColor(Color.WHITE);
             canvas.drawText(text.toString(), START_X_POS, TEXT_BASELINE_Y, paint);
         }
@@ -65,12 +73,27 @@ public class BubbleImageView extends ImageView {
         invalidate();
     }
 
-    public void setBubbleSelected(boolean isSelected) {
-        this.isSelected = isSelected;
+    /**
+     * Background color of bubble will be changed to dark blue.
+     *
+     * @param isOnFinalPlace
+     */
+    public void setBubbleIsOnFinalPlace(boolean isOnFinalPlace) {
+        this.isOnFinalPlace = isOnFinalPlace;
         invalidate();
     }
 
-    public boolean isImageViewSelected() {
+    public boolean isBubbleSelected() {
         return isSelected;
+    }
+
+    /**
+     * Background color will be changed to blue if true
+     *
+     * @param isSelected
+     */
+    public void setBubbleSelected(boolean isSelected) {
+        this.isSelected = isSelected;
+        invalidate();
     }
 }

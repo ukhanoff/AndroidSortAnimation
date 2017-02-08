@@ -1,8 +1,5 @@
 package com.ukhanoff.bubblesort.fragments;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.ValueAnimator;
 import android.graphics.Bitmap;
 import android.graphics.Paint;
 import android.graphics.Rect;
@@ -13,37 +10,44 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.BounceInterpolator;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.ukhanoff.bubblesort.R;
+import com.ukhanoff.bubblesort.common.AlgorithmAnimationListener;
+import com.ukhanoff.bubblesort.common.AnimationScenarioItem;
+import com.ukhanoff.bubblesort.common.AnimationsCoordinator;
 import com.ukhanoff.bubblesort.utils.Utils;
 import com.ukhanoff.bubblesort.views.BubbleImageView;
 
 import java.util.ArrayList;
 
 /**
- * Created by ukhanoff on 2/2/17.
+ * Main fragment where sorting visualisation appears
  */
 
 public class SortingFragment extends Fragment {
     public static final int PADDING = 50;
+    public static final int BUBBLE_MARGIN = 4;
+    int i = 0;
     private EditText editText;
     private Button goButton;
     private Button animButton;
     private LinearLayout bubblesContainer;
+    private AnimationsCoordinator animationsCoordinator;
+    private ArrayList<AnimationScenarioItem> scenario;
     View.OnClickListener buttonClickListener = new View.OnClickListener() {
 
         @Override
         public void onClick(View v) {
             String inputUserArray = editText.getText().toString();
             if (!TextUtils.isEmpty(inputUserArray)) {
+                scenario = new ArrayList<>();
                 ArrayList<Integer> integerArrayList = new ArrayList<>(convertToIntArray(inputUserArray));
                 drawBubbles(integerArrayList);
-//                sort(integerArrayList);
+                sort(integerArrayList);
             } else {
                 Toast.makeText(getContext(), R.string.empty_field_warning, Toast.LENGTH_LONG).show();
             }
@@ -60,108 +64,41 @@ public class SortingFragment extends Fragment {
         animButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                animateBubble();
+                runAnimationIteration();
             }
         });
         bubblesContainer = (LinearLayout) fragmentView.findViewById(R.id.bubbles_container);
+        animationsCoordinator = new AnimationsCoordinator(bubblesContainer);
+        animationsCoordinator.addListener(new AlgorithmAnimationListener() {
+            @Override
+            public void onSwapStepAnimationEnd(int endedPosition) {
+                runAnimationIteration();
+            }
+        });
         return fragmentView;
     }
 
-    private void animateBubble() {
-        //TODO refactor this stuff
-        if (bubblesContainer != null && bubblesContainer.getChildCount() > 0) {
-            final BubbleImageView tempView = (BubbleImageView) bubblesContainer.getChildAt(0);
-            final BubbleImageView nextTempView = (BubbleImageView) bubblesContainer.getChildAt(1);
-            final int currItemWidth = tempView.getWidth();
-            final int nextItemWidth = nextTempView.getWidth();
-
-            //BLINKING
-            ValueAnimator blinkAnimation = ValueAnimator.ofInt(0, 5);
-            blinkAnimation.setDuration(1000);
-            blinkAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    int value = ((Integer) animation.getAnimatedValue()).intValue();
-                    if (value % 2 == 0) {
-                        tempView.setBubbleSelected(false);
-                        nextTempView.setBubbleSelected(false);
-                    } else {
-                        tempView.setBubbleSelected(true);
-                        nextTempView.setBubbleSelected(true);
-                    }
-                }
-            });
-
-            // CLOCKWISE SWAP
-            final ValueAnimator animator = ValueAnimator.ofFloat(0, 1);
-            animator.setDuration(2000);
-            tempView.setBubbleSelected(true);
-            animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    float value = ((Float) (animation.getAnimatedValue()))
-                            .floatValue();
-                    tempView.setTranslationX((float) (-nextItemWidth * Math.sin(value * Math.PI + Math.PI / 2) + 8));
-                    tempView.setTranslationY((float) (50.0 * Math.cos(value * Math.PI + Math.PI / 2)));
-                }
-            });
-
-            animator.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    super.onAnimationEnd(animation);
-                    tempView.setBubbleSelected(false);
-                }
-            });
-            animator.setInterpolator(new BounceInterpolator());
-
-            // COUNTER CLOCKWISE SWAP
-            final ValueAnimator animatorBack = ValueAnimator.ofFloat(0, 1);
-            animatorBack.setDuration(2000);
-            nextTempView.setBubbleSelected(true);
-            animatorBack.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    float value = ((Float) (animation.getAnimatedValue()))
-                            .floatValue();
-
-                    nextTempView.setTranslationX((float) (currItemWidth * Math.sin(value * Math.PI + Math.PI / 2) - 8));
-                    nextTempView.setTranslationY((float) (-50.0 * Math.cos(value * Math.PI + Math.PI / 2)));
-                }
-            });
-
-            animatorBack.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    super.onAnimationEnd(animation);
-                    nextTempView.setBubbleSelected(false);
-                }
-            });
-            animatorBack.setInterpolator(new BounceInterpolator());
-
-            blinkAnimation.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    super.onAnimationEnd(animation);
-                    animator.start();
-                    animatorBack.start();
-                }
-            });
-
-            blinkAnimation.start();
+    private void runAnimationIteration() {
+        if (scenario.size() == i) {
+            animationsCoordinator.showFinish();
+            return;
         }
+        if (scenario != null && !scenario.isEmpty() && scenario.size() > i) {
+            AnimationScenarioItem animationStep = scenario.get(i);
+            i++;
+            if (animationStep.isShouldBeSwapped()) {
+                animationsCoordinator.showSwapStep(animationStep.getAnimationViewItemPosition(), animationStep.isFinalPlace());
+            } else {
+                animationsCoordinator.showNonSwapStep(animationStep.getAnimationViewItemPosition(), animationStep.isFinalPlace());
+            }
+        }
+
     }
 
-
-    private void swap(ArrayList<Integer> list, int inner) {
-        swapViews(inner);
+    private void swap(final ArrayList<Integer> list, final int inner) {
         int temp = list.get(inner);
         list.set(inner, list.get(inner + 1));
         list.set(inner + 1, temp);
-    }
-
-    private void swapViews(final int innerPosition) {
-
     }
 
     private void drawBubbles(ArrayList<Integer> listToDraw) {
@@ -170,7 +107,7 @@ public class SortingFragment extends Fragment {
         }
 
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        int marginInPx = Utils.dpToPx(getContext(), 4);
+        int marginInPx = Utils.dpToPx(getContext(), BUBBLE_MARGIN);
         lp.setMargins(0, 0, marginInPx, 0);
 
         int pos = 0;
@@ -196,7 +133,7 @@ public class SortingFragment extends Fragment {
     private Bitmap createCalculatedBitmap(Integer currentIntValue) {
         final Rect bounds = new Rect();
         Paint paint = new Paint(Paint.LINEAR_TEXT_FLAG);
-        paint.setTextSize(40f);
+        paint.setTextSize(BubbleImageView.TEXT_SIZE);
         paint.getTextBounds(currentIntValue.toString(), 0, currentIntValue.toString().length(), bounds);
         return Bitmap.createBitmap(bounds.width() + PADDING, bounds.height() + PADDING, Bitmap.Config.ALPHA_8);
     }
@@ -214,12 +151,21 @@ public class SortingFragment extends Fragment {
 
     }
 
-    public ArrayList<Integer> sort(ArrayList<Integer> unsortedValues) {
+    private ArrayList<Integer> sort(ArrayList<Integer> unsortedValues) {
         ArrayList<Integer> values = new ArrayList<>(unsortedValues);
+        boolean isLastInLoop;
         for (int i = 0; i < values.size() - 1; i++) {
             for (int j = 0; j < values.size() - i - 1; j++) {
+                if (j == values.size() - i - 2) {
+                    isLastInLoop = true;
+                } else {
+                    isLastInLoop = false;
+                }
                 if (values.get(j) > values.get(j + 1)) {
                     swap(values, j);
+                    scenario.add(new AnimationScenarioItem(true, j, isLastInLoop));
+                } else {
+                    scenario.add(new AnimationScenarioItem(false, j, isLastInLoop));
                 }
             }
         }
