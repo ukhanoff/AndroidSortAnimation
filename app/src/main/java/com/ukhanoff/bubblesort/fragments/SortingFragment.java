@@ -79,7 +79,7 @@ public class SortingFragment extends Fragment {
     }
 
     private void runAnimationIteration() {
-        if (scenario.size() == i) {
+        if (scenario != null && !scenario.isEmpty() && scenario.size() == i) {
             animationsCoordinator.showFinish();
             return;
         }
