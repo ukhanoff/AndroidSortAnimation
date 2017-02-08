@@ -21,6 +21,7 @@
             android:layout_weight="4"
             android:digits="0123456789,"
             android:inputType="number"
+            android:maxLength="25"
             android:maxLines="1" />
 
         <Button
