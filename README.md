@@ -1,6 +1,6 @@
 # AndroidSortAnimation
 
-Small App to visualize bubble sort algorithm.
+Small App to visualize bubble sort algorithm. This App is no more than test assignment which just demonstrates how to work with animations, views etc.
 
 ## VideoDemo
 
